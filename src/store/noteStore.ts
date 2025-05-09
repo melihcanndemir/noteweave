@@ -98,3 +98,4 @@ export const useNoteActions = () => useNoteStore((state) => state.actions);
 export const useIsHydrated = () => useNoteStore((state) => state.isHydrated);
 
 export default useNoteStore;
+

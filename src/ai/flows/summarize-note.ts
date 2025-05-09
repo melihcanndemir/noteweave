@@ -1,4 +1,4 @@
-// SummarizeNote Flow
+// SummarizeNote Flow NoteWave
 'use server';
 
 /**

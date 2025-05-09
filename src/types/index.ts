@@ -6,3 +6,4 @@ export interface Note {
   updatedAt: number; // timestamp
   summary?: string | null;
 }
+

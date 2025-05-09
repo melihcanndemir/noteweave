@@ -1,5 +1,9 @@
-# Firebase Studio
+## NoteWeave
 
-This is a NextJS starter in Firebase Studio.
+> This project was not manually written.  
+> It was generated using Firebase Studio AI.  
+> I only typed the name, the system did the rest.
 
-To get started, take a look at src/app/page.tsx.
+Framework: Next.js + TypeScript + Tailwind + Zustand  
+AI: Google Gemini 2.0 Flash via Genkit  
+Generated: No code, no prompt, just intent.
