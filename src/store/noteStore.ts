@@ -5,11 +5,14 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import type { Note } from '@/types';
 import { summarizeNote } from '@/ai/flows/summarize-note';
 
+export type ViewMode = 'edit' | 'preview';
+
 interface NoteState {
   notes: Note[];
   activeNoteId: string | null;
   isLoadingSummary: boolean;
   isHydrated: boolean;
+  viewMode: ViewMode;
   actions: {
     addNote: () => Note;
     setActiveNoteId: (id: string | null) => void;
@@ -17,6 +20,8 @@ interface NoteState {
     deleteNote: (id: string) => void;
     generateSummary: (id: string) => Promise<string | null>;
     setHydrated: () => void;
+    toggleViewMode: () => void;
+    setViewMode: (mode: ViewMode) => void;
   };
 }
 
@@ -27,6 +32,7 @@ const useNoteStore = create<NoteState>()(
       activeNoteId: null,
       isLoadingSummary: false,
       isHydrated: false,
+      viewMode: 'edit',
       actions: {
         setHydrated: () => set({ isHydrated: true }),
         addNote: () => {
@@ -37,14 +43,22 @@ const useNoteStore = create<NoteState>()(
             createdAt: Date.now(),
             updatedAt: Date.now(),
           };
+          
           set((state) => ({
             notes: [newNote, ...state.notes],
-            activeNoteId: newNote.id,
           }));
+          
+          setTimeout(() => {
+            set({ activeNoteId: newNote.id });
+          }, 50);
+          
           return newNote;
         },
         setActiveNoteId: (id) => set({ activeNoteId: id }),
         updateNote: (id, title, content) => {
+          const noteExists = get().notes.some(note => note.id === id);
+          if (!noteExists) return;
+          
           set((state) => ({
             notes: state.notes.map((note) =>
               note.id === id ? { ...note, title, content, updatedAt: Date.now() } : note
@@ -77,12 +91,24 @@ const useNoteStore = create<NoteState>()(
             return null;
           }
         },
+        toggleViewMode: () => {
+          set((state) => ({
+            viewMode: state.viewMode === 'edit' ? 'preview' : 'edit',
+          }));
+        },
+        setViewMode: (mode) => {
+          set({ viewMode: mode });
+        }
       },
     }),
     {
       name: 'noteweave-storage', // name of the item in the storage (must be unique)
       storage: createJSONStorage(() => localStorage), // (optional) by default, 'localStorage' is used
-      partialize: (state) => ({ notes: state.notes, activeNoteId: state.activeNoteId }), // persist only notes and activeNoteId
+      partialize: (state) => ({ 
+        notes: state.notes, 
+        activeNoteId: state.activeNoteId,
+        viewMode: state.viewMode
+      }), // persist notes, activeNoteId, and viewMode
       onRehydrateStorage: () => (state) => {
         if (state) state.actions.setHydrated();
       },
@@ -96,6 +122,7 @@ export const useActiveNoteId = () => useNoteStore((state) => state.activeNoteId)
 export const useIsLoadingSummary = () => useNoteStore((state) => state.isLoadingSummary);
 export const useNoteActions = () => useNoteStore((state) => state.actions);
 export const useIsHydrated = () => useNoteStore((state) => state.isHydrated);
+export const useViewMode = () => useNoteStore((state) => state.viewMode);
 
 export default useNoteStore;
 
